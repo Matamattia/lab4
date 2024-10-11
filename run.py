@@ -19,7 +19,7 @@ if __name__ == "__main__":
                                      batch_size=10
     )
     
-    rbm.cd1(visible_trainset=train_imgs, n_iterations=10000)
+    rbm.cd1(visible_trainset=train_imgs, n_iterations=5001)
     
     ''' deep- belief net '''
 
