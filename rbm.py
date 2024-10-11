@@ -58,39 +58,40 @@ class RestrictedBoltzmannMachine():
            n_iterations: number of iterations of learning (each iteration learns a mini-batch)
          """
          print ("learning CD1")
-       
-         n_samples = visible_trainset.shape[0]
-         for it in range(n_iterations):
- 	    # [TODO TASK 4.1] run k=1 alternating Gibbs sampling : v_0 -> h_0 ->  v_1 -> h_1.
-             # you may need to use the inference functions 'get_h_given_v' and 'get_v_given_h'.
-             # note that inference methods returns both probabilities and activations (samples from probablities) and you may have to decide when to use what.
-             print(f"Iteration {it+1}")
-             v0=visible_trainset[it*self.batch_size:(it+1)*self.batch_size,:]
-             # Passo di Gibbs (k=1): v0 -> h0 -> v1 -> h1
-             h0_prob, h0 = self.get_h_given_v(v0)
-             print("Computed h0")
-            
-             v1_prob, v1 = self.get_v_given_h(h0)
-             print("Computed v1")
-            
-             h1_prob, h1 = self.get_h_given_v(v1)
-             print("Computed h1")
+         for i in range(20):
+            n_samples = visible_trainset.shape[0]
+            final_v1= np.zeros((n_samples,self.ndim_visible))
+            for it in range(n_iterations):
+            # [TODO TASK 4.1] run k=1 alternating Gibbs sampling : v_0 -> h_0 ->  v_1 -> h_1.
+                # you may need to use the inference functions 'get_h_given_v' and 'get_v_given_h'.
+                # note that inference methods returns both probabilities and activations (samples from probablities) and you may have to decide when to use what.
+                #print(f"Iteration {it+1}")
+                v0=visible_trainset[it*self.batch_size:(it+1)*self.batch_size,:]
+                # Passo di Gibbs (k=1): v0 -> h0 -> v1 -> h1
+                h0_prob, h0 = self.get_h_given_v(v0)
+                #print("Computed h0")
+                
+                v1_prob, v1 = self.get_v_given_h(h0)
+                #print("Computed v1")
+                final_v1[it*self.batch_size:(it+1)*self.batch_size,:]=v1.copy()
+                h1_prob, h1 = self.get_h_given_v(v1)
+                #print("Computed h1")
 
-             # [TODO TASK 4.1] update the parameters using function 'update_params'
-             self.update_params(v0, h0, v1_prob, h1_prob)
-             print("Updated parameters")
-             
-           
-             # visualize once in a while when visible layer is input images
-           
-             if it % self.rf["period"] == 0 and self.is_bottom:
-               
-                 viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
-             # print progress
-           
-             if it % self.print_period == 0 :
-                 print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - visible_trainset)))
-       
+                # [TODO TASK 4.1] update the parameters using function 'update_params'
+                self.update_params(v0, h0, v1_prob, h1_prob)
+                #print("Updated parameters")
+                
+            
+                # visualize once in a while when visible layer is input images
+            
+                if it % self.rf["period"] == 0 and self.is_bottom:
+                
+                    viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
+                # print progress
+            
+                if it % self.print_period == 0 :
+                    print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset[0:it,:] - final_v1[0:it,:])))
+        
          return
    
      def update_params(self,v_0,h_0,v_k,h_k):
