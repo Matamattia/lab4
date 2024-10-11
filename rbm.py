@@ -3,7 +3,7 @@ class RestrictedBoltzmannMachine():
      '''
      For more details : A Practical Guide to Training Restricted Boltzmann Machines https://www.cs.toronto.edu/~hinton/absps/guideTR.pdf
      '''
-     def __init__(self, ndim_visible, ndim_hidden, is_bottom=False, image_size=[28,28], is_top=False, n_labels=10, batch_size=10):
+     def __init__(self, ndim_visible, ndim_hidden, is_bottom=False, image_size=[28,28], is_top=False, n_labels=10, batch_size=20):
          """
          Args:
            ndim_visible: Number of units in visible layer.
@@ -40,17 +40,17 @@ class RestrictedBoltzmannMachine():
          self.learning_rate = 0.01
        
          self.momentum = 0.7
-         self.print_period = 5000
+         self.print_period = 3000
        
          self.rf = { # receptive-fields. Only applicable when visible layer is input data
-             "period" : 5000, # iteration period to visualize
+             "period" : 3000, # iteration period to visualize
              "grid" : [5,5], # size of the grid
              "ids" : np.random.randint(0,self.ndim_hidden,25) # pick some random hidden units
              }
        
          return
        
-     def cd1(self,visible_trainset, n_iterations=6000):
+     def cd1(self,visible_trainset, n_iterations=3000):
        
          """Contrastive Divergence with k=1 full alternating Gibbs sampling
          Args:
@@ -89,8 +89,8 @@ class RestrictedBoltzmannMachine():
                     viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
                 # print progress
             
-                if it % self.print_period == 0 :
-                    print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset[0:it,:] - final_v1[0:it,:])))
+                if (it+1) % self.print_period == 0 :
+                    print ("iteration=%7d recon_loss=%4.4f"%(it+1, np.linalg.norm(visible_trainset[0:it,:] - final_v1[0:it,:])))
         
          return
    
@@ -105,9 +105,9 @@ class RestrictedBoltzmannMachine():
             all args have shape (size of mini-batch, size of respective layer)
          """
          # [DONE TASK 4.1] get the gradients from the arguments (replace the 0s below) and update the weight and bias parameters
-         self.delta_bias_v = np.mean(v_0 - v_k,axis=0)
+         self.delta_bias_v = self.learning_rate*np.mean(v_0 - v_k,axis=0)
          self.delta_weight_vh = self.learning_rate * (np.dot(v_0.T, h_0) - np.dot(v_k.T, h_k)) / self.batch_size
-         self.delta_bias_h = np.mean(h_0 - h_k,axis=0)
+         self.delta_bias_h = self.learning_rate*np.mean(h_0 - h_k,axis=0)
        
          self.bias_v += self.delta_bias_v
          self.weight_vh += self.delta_weight_vh
