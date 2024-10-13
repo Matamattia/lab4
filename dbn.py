@@ -28,12 +28,12 @@ class DeepBeliefNet():
         self.rbm_stack = {
             
             'vis--hid' : RestrictedBoltzmannMachine(ndim_visible=sizes["vis"], ndim_hidden=sizes["hid"],
-                                                    is_bottom=True, image_size=image_size, batch_size=batch_size),
+                                                    is_bottom=True, image_size=image_size, batch_size=batch_size,name='vis--hid'),
             
-            'hid--pen' : RestrictedBoltzmannMachine(ndim_visible=sizes["hid"], ndim_hidden=sizes["pen"], batch_size=batch_size),
+            'hid--pen' : RestrictedBoltzmannMachine(ndim_visible=sizes["hid"], ndim_hidden=sizes["pen"], batch_size=batch_size,name='hid--pen'),
             
             'pen+lbl--top' : RestrictedBoltzmannMachine(ndim_visible=sizes["pen"]+sizes["lbl"], ndim_hidden=sizes["top"],
-                                                        is_top=True, n_labels=n_labels, batch_size=batch_size)
+                                                        is_top=True, n_labels=n_labels, batch_size=batch_size,name='pen+lbl--top')
         }
         
         self.sizes = sizes

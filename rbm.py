@@ -3,7 +3,7 @@ class RestrictedBoltzmannMachine():
       '''
       For more details : A Practical Guide to Training Restricted Boltzmann Machines https://www.cs.toronto.edu/~hinton/absps/guideTR.pdf
       '''
-      def __init__(self, ndim_visible, ndim_hidden, is_bottom=False, image_size=[28,28], is_top=False, n_labels=10, batch_size=20):
+      def __init__(self, ndim_visible, ndim_hidden, is_bottom=False, image_size=[28,28], is_top=False, n_labels=10, batch_size=20,name=""):
           """
           Args:
             ndim_visible: Number of units in visible layer.
@@ -14,7 +14,7 @@ class RestrictedBoltzmannMachine():
             n_label: Number of label categories.
             batch_size: Size of mini-batch.
           """
-     
+          self.name=name
           self.ndim_visible = ndim_visible
           self.ndim_hidden = ndim_hidden
           self.is_bottom = is_bottom
@@ -57,10 +57,13 @@ class RestrictedBoltzmannMachine():
             visible_trainset: training data for this rbm, shape is (size of training set, size of visible layer)
             n_iterations: number of iterations of learning (each iteration learns a mini-batch)
           """
+          epochs=30
           print ("learning CD1")
-          for i in range(20):
+          recon_loss = {"epoch":[], "loss":[]}
+          for i in range(epochs):
              n_samples = visible_trainset.shape[0]
              final_v1= np.zeros((n_samples,self.ndim_visible))
+             
              for it in range(n_iterations):
              # [TODO TASK 4.1] run k=1 alternating Gibbs sampling : v_0 -> h_0 ->  v_1 -> h_1.
                  # you may need to use the inference functions 'get_h_given_v' and 'get_v_given_h'.
@@ -89,8 +92,13 @@ class RestrictedBoltzmannMachine():
                  # print progress
            
                  if (it+1) % self.print_period == 0 :
-                     print ("iteration=%7d recon_loss=%4.4f"%(it+1, np.linalg.norm(visible_trainset[0:it,:] - final_v1[0:it,:])))
-       
+                     
+                     ph0, h0 = self.get_h_given_v(visible_trainset)
+                     pvk, vk = self.get_v_given_h(h0)
+                     recon_loss["epoch"].append(i+1)
+                     recon_loss["loss"].append(np.linalg.norm(visible_trainset - vk))
+                     print("epoch=%7d recon_loss=%4.4f" %(i+1, recon_loss["loss"][-1]))
+          self.plot_loss(recon_loss)
           return
   
       def update_params(self,v_0,h_0,v_k,h_k):
@@ -273,4 +281,11 @@ class RestrictedBoltzmannMachine():
           self.bias_h += self.delta_bias_h
       
           return    
-
+      def plot_loss(self, loss):
+        plt.title('Reconstruction loss over training epochs')
+        plt.xlabel('epoch')
+        plt.ylabel('reconstruction loss')
+        plt.plot(loss["epoch"], loss["loss"])
+        plt.savefig(
+            f"trained_rbm/{self.name}_loss_{self.ndim_hidden}_{self.batch_size}.png")
+        plt.show()
