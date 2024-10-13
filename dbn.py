@@ -77,7 +77,7 @@ class DeepBeliefNet():
 
             top=self.rbm_stack["pen+lbl--top"].get_h_given_v(penlbl)[1]
             penlbl=self.rbm_stack["pen+lbl--top"].get_v_given_h(top)[1]
-
+        
         predicted_lbl = penlbl[:, -lbl.shape[1]:]
             
         print ("accuracy = %.2f%%"%(100.*np.mean(np.argmax(predicted_lbl,axis=1)==np.argmax(true_lbl,axis=1))))
@@ -94,23 +94,24 @@ class DeepBeliefNet():
         """
         
         n_sample = true_lbl.shape[0]
-        
         records = []        
         fig,ax = plt.subplots(1,1,figsize=(3,3))
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
         ax.set_xticks([]); ax.set_yticks([])
 
-        lbl = true_lbl
-        top=np.random.rand(n_sample,self.sizes["top"]) #genero il top layer a caso
+        lbl = np.copy(true_lbl)
+        pen=np.random.choice([0, 1],size=(n_sample,self.sizes["pen"]+self.sizes["lbl"])) #genero il top layer a caso
         # [TODO TASK 4.2] fix the label in the label layer and run alternating Gibbs sampling in the top RBM. From the top RBM, drive the network \ 
         # top to the bottom visible layer (replace 'vis' from random to your generated visible layer).
             
         for _ in range(self.n_gibbs_gener):
-            pen=self.rbm_stack["pen+lbl--top"].get_v_given_h(top)[1]
-            pen[:, -lbl.shape[1]:]=lbl.copy()
+            pen[:, -lbl.shape[1]:]=np.copy(lbl)
             top=self.rbm_stack["pen+lbl--top"].get_h_given_v(pen)[1]
-            vis = self.rbm_stack["vis--hid"].get_v_given_h_dir(self.rbm_stack["hid--pen"].get_v_given_h_dir(pen[:, :-lbl.shape[1]])[1])[1]
+            pen=self.rbm_stack["pen+lbl--top"].get_v_given_h(top)[1]
             
+           
+            hid=self.rbm_stack["hid--pen"].get_v_given_h_dir(pen[:, :-lbl.shape[1]])[1]
+            vis = self.rbm_stack["vis--hid"].get_v_given_h_dir(hid)[1]
             records.append( [ ax.imshow(vis.reshape(self.image_size), cmap="bwr", vmin=0, vmax=1, animated=True, interpolation=None) ] )
             
         anim = stitch_video(fig,records).save("%s.generate%d.mp4"%(name,np.argmax(true_lbl)))            

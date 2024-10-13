@@ -19,7 +19,7 @@ if __name__ == "__main__":
                                      batch_size=20
     )
     
-    rbm.cd1(visible_trainset=train_imgs, n_iterations=3000)
+    #rbm.cd1(visible_trainset=train_imgs, n_iterations=3000)
     
     ''' deep- belief net '''
 
@@ -35,9 +35,9 @@ if __name__ == "__main__":
 
     dbn.train_greedylayerwise(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=3000)
 
-    dbn.recognize(train_imgs, train_lbls)
+    #dbn.recognize(train_imgs, train_lbls)
     
-    dbn.recognize(test_imgs, test_lbls)
+    #dbn.recognize(test_imgs, test_lbls)
 
     for digit in range(10):
         digit_1hot = np.zeros(shape=(1,10))
